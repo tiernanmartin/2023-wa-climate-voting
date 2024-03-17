@@ -1,0 +1,29 @@
+---
+title: "Climate Voting in Washington State"
+editor: visual
+number-sections: true
+author:
+  - name: Tiernan Martin
+    corresponding: true
+    email: tiernan@futurewise.org
+    roles:
+      - Investigation
+      - Software
+      - Visualization
+    affiliations:
+      - Futurewise
+keywords:
+  - Climate
+abstract: |
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer felis erat, mattis eget eros ac, consequat dictum ex. In condimentum, nibh a eleifend laoreet, magna.
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+
+```
+
+# Introduction
