@@ -27,3 +27,17 @@ library(tidyverse)
 ```
 
 ## Introduction
+
+## Data & Methods
+
+### Data
+
+-   Voting Precinct Shapefiles: https://www.sos.wa.gov/elections/data-research/election-data-and-maps/reports-data-and-statistics/precinct-shapefiles
+-   Election Results: https://www.sos.wa.gov/elections/data-research/election-data-and-maps/election-results-and-voters-pamphlets
+-   American Community Survey: https://www.census.gov/programs-surveys/acs/data.html
+- 2017 Local Area Transportation Characteristics for Households
+https://www.bts.gov/latch/latch-data
+
+### Notes
+
+  * Income should not be included in our regression because it is used in the model that estimates household VMT (see LATCH Methodology p. 10)
