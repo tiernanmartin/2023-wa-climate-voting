@@ -4,5 +4,6 @@
 .Ruserdata
 *.qgz
 data/
+gpkg/
 
 /.quarto/
