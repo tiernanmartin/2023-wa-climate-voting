@@ -49,6 +49,8 @@ pipeline_files <- list(
 # TARGET PIPELINE: DATA -------------------------------------------
 
 pipeline_data <- list(
+  tar_target(wa_pop_2010,
+             make_wa_pop_2010()),
   tar_target(wa_blocks,
              make_wa_blocks()),
   tar_target(tracts, 

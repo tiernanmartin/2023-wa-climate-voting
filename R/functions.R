@@ -1,5 +1,23 @@
 
 # TARGET FUNCTIONS --------------------------------------------------------
+make_wa_pop_2010 <- function(){
+  
+  wa_county_geoids <- tidycensus::county_laea$GEOID |> 
+    keep(~ str_detect(.x,"^53")) |> 
+    map_chr(~str_remove(.x,"^53"))
+  
+  wa_pop_2010 <- get_decennial(geography = "block",
+                               variables = "P001001",
+                               year = 2010,
+                               state = "WA",
+                               county = wa_county_geoids) |> 
+    clean_names() |> 
+    transmute(geoid,
+              pop_2010 = as.integer(value))
+  
+  return(wa_pop_2010)
+}
+
 make_wa_blocks <- function(){
   
   wa_county_geoids <- tidycensus::county_laea$GEOID |> 
