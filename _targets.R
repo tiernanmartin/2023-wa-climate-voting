@@ -49,14 +49,16 @@ pipeline_files <- list(
 # TARGET PIPELINE: DATA -------------------------------------------
 
 pipeline_data <- list(
+  tar_target(wa_blocks,
+             make_wa_blocks()),
   tar_target(tracts, 
              make_tracts()),
   tar_target(hh_vmt_2012_2016,
              make_hh_vmt_2012_2016(file_latch_2016)),
   tar_target(i732, 
              make_i732(file_precincts_2016, file_election_2016)),
-  tar_target(vote_pres, 
-             make_vote_pres(file_precincts_2016, file_election_2016))
+  tar_target(vote_pres_2016, 
+             make_vote_pres_2016(file_precincts_2016, file_election_2016))
 )
 
 # PROJECT PIPELINE --------------------------------------------------------

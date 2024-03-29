@@ -1,5 +1,5 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|09b884be89fd16d2|||||||||||||||
+.Random.seed|object|3d4bbcb13ac02f2c|||||||||||||||
 file_election_2016|stem|4512fadbc83a724f|68b16a8a6340431e|ef46db3751d8e999|-1408057246|C:/Users/tiern/Documents/R/2024-wa-climate-voting/data/2016-general-data.zip|t19808.6335404649s|4010b20a91b88b80|264169870|file|local|vector|||0||
 file_latch_2016|stem|7e120f28c799629c|524fc17555ace4dd|ef46db3751d8e999|-1690163345|C:/Users/tiern/Documents/R/2024-wa-climate-voting/data/Local_Area_Transportation_Characteristics_by_Household_20240326.csv|t19808.6959058016s|37a31f24b2572cd3|46600417|file|local|vector|||0||
 file_latch_2017|stem|7e120f28c799629c|524fc17555ace4dd|ef46db3751d8e999|2138109518|C:/Users/tiern/Documents/R/2024-wa-climate-voting/data/Local_Area_Transportation_Characteristics_by_Household_20240326.csv|t19808.6959058016s|37a31f24b2572cd3|46600417|file|local|vector|||0||
@@ -12,10 +12,14 @@ make_medianinc_2012_2016|function|2bbe8b2288a81e12|||||||||||||||
 make_medianinc_2014_2018|function|83fa0ef537fd4b8e|||||||||||||||
 make_tracts|function|bfa0d06acdea60f6|||||||||||||||
 make_vote_pres|function|e50aff8206050414|||||||||||||||
+make_vote_pres_2016|function|7e025ea83aa8c84c|||||||||||||||
+make_wa_blocks|function|2de2f6d2fcd283de|||||||||||||||
 medianinc_2014_2018|stem|df09e0fdba86b780|f0013bd910cc217c|1a48a771a56f2e57|2063235490||t19808.6723665497s|e0fe7526e204fa79|1473468|rds|local|vector|||2.61||
-pipeline_data|object|280eac808f9c56a5|||||||||||||||
+pipeline_data|object|4c7c525ff009922c|||||||||||||||
 pipeline_files|object|8c0189f012a15265|||||||||||||||
 pipeline_spatial|object|69623c9a04d86b15|||||||||||||||
 to_proj_crs|function|41a41af63af593e0|||||||||||||||
 tracts|stem|d27d893d0bfe33d2|36844d782496656a|7853c8ce1e4766b0|-849314764||t19808.9772965294s|470c63f97a43097f|1475450|rds|local|vector|||1.28||
 vote_pres|stem|24fbff9e42987f32|afc4029c80173395|3ac3d084c7b992dc|-573880848||t19808.6784187872s|26207499faff418d|31874294|rds|local|vector|||7.23||
+vote_pres_2016|stem|24fbff9e42987f32|2d7c73affc0cc666|de909593d7a2c3a8|-1573577369||t19811.4913490199s|26207499faff418d|31874294|rds|local|vector|||6.61||
+wa_blocks|stem|1bce81bd15bcd8d7|8f68bf0ce208cfa2|99bceacfa5ffc217|-646954347||t19811.4912035027s|38eba3e0f36d4e6c|154394664|rds|local|vector|||44.08||

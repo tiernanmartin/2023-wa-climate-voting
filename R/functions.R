@@ -1,5 +1,21 @@
 
 # TARGET FUNCTIONS --------------------------------------------------------
+make_wa_blocks <- function(){
+  
+  wa_county_geoids <- tidycensus::county_laea$GEOID |> 
+    keep(~ str_detect(.x,"^53")) |> 
+    map_chr(~str_remove(.x,"^53"))
+  
+  
+  wa_blocks <- tigris::blocks(state = "wa",
+                              year = 2016,
+                              county = wa_county_geoids) |> 
+    clean_names() |> 
+    to_proj_crs()
+  
+  return(wa_blocks)
+  
+}
 
 make_tracts <- function(){
   
@@ -62,7 +78,7 @@ make_i732 <- function(prec_fp, elec_fp){
   return(i732)
 }
 
-make_vote_pres <- function(prec_fp, elec_fp){
+make_vote_pres_2016 <- function(prec_fp, elec_fp){
   
   # prec_fp <- here("data/Statewide_Prec_2016.zip")
   # 
@@ -90,21 +106,21 @@ make_vote_pres <- function(prec_fp, elec_fp){
     clean_names() 
   
   
-  vote_pres <- elec_2016|> 
+  vote_pres_2016 <- elec_2016|> 
     select(precinct_code,
            contains("g16pr")) # 'g16pr; is the code for presidential election results
   
   # Join
   
-  vote_pres <- prec_2016 |> 
+  vote_pres_2016 <- prec_2016 |> 
     select(county, 
            preccode, 
            precname,
            precinct_code = st_code) |> 
-    left_join(vote_pres, by = "precinct_code")
+    left_join(vote_pres_2016, by = "precinct_code")
   
   
-  return(vote_pres)
+  return(vote_pres_2016)
 }
 
 
