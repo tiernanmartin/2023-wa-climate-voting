@@ -82,7 +82,9 @@ pipeline_data <- list(
 
 pipeline_models <- list(
   tar_target(model_spatial_lag,
-             make_model_spatial_lag(model_data, model_lm)),
+             make_model_spatial_lag(model_data, model_lm, model_spatial_weights)),
+  tar_target(model_spatial_weights,
+             make_model_spatial_weights(model_data)),
   tar_target(model_lm,
              make_model_lm(model_data))
 )

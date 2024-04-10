@@ -1,23 +1,31 @@
 
 # TARGET FUNCTIONS --------------------------------------------------------
 
-make_model_spatial_lag <- function(model_data, model_lm){
+make_model_spatial_lag <- function(model_data, model_lm, model_spatial_weights){
   
   model_data <- model_data |> 
     drop_na()
   
-  wts <- model_data |>  
-    poly2nb()  |> 
-    nb2listw(zero.policy = TRUE)
-  
   model_spatial_lag <- lagsarlm(
     formula = model_lm, 
     data = model_data, 
-    listw = wts,
+    listw = model_spatial_weights,
     zero.policy = TRUE
   )
   
   return(model_spatial_lag)
+}
+
+make_model_spatial_weights <- function(model_data){
+  
+  model_data <- model_data |> 
+    drop_na()
+  
+  model_spatial_weights <- model_data |>  
+    poly2nb()  |> 
+    nb2listw(zero.policy = TRUE)
+  
+  return(model_spatial_weights)
 }
 
 make_model_lm <- function(model_data){
