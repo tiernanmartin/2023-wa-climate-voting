@@ -10,6 +10,8 @@ library(tigris)
 library(janitor)
 library(readxl)
 library(mapview)
+library(spdep)
+library(spatialreg)
 
 
 # SET OPTIONS -------------------------------------------------------------
@@ -22,7 +24,9 @@ tar_option_set(
                "tidycensus",
                "tigris",
                "janitor",
-               "readxl")
+               "readxl",
+               "spdep",
+               "spatialreg")
 )
 
 # SOURCE R FUNCTIONS -----------------------------------------------------------
@@ -49,6 +53,16 @@ pipeline_files <- list(
 # TARGET PIPELINE: DATA -------------------------------------------
 
 pipeline_data <- list(
+  tar_target(model_data,
+             make_model_data(hh_vmt_2012_2016, tracts_vote_2016)),
+  tar_target(drove_alone_2012_2016,
+             make_drove_alone_2012_2016()),
+  tar_target(tracts_vote_2016,
+             make_tracts_vote_2016(wa_blocks,
+                                   wa_pop_2010,
+                                   vote_pres_2016, 
+                                   i732,
+                                   tracts)),
   tar_target(wa_pop_2010,
              make_wa_pop_2010()),
   tar_target(wa_blocks,
@@ -63,9 +77,20 @@ pipeline_data <- list(
              make_vote_pres_2016(file_precincts_2016, file_election_2016))
 )
 
+
+# TARGET PIPELINE: MODELS -------------------------------------------------
+
+pipeline_models <- list(
+  tar_target(model_spatial_lag,
+             make_model_spatial_lag(model_data, model_lm)),
+  tar_target(model_lm,
+             make_model_lm(model_data))
+)
+
 # PROJECT PIPELINE --------------------------------------------------------
 
 list(
   pipeline_files,
-  pipeline_data
+  pipeline_data,
+  pipeline_models
 )
