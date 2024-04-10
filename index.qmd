@@ -1,0 +1,193 @@
+---
+title: "Climate Voting in Washington State"
+editor: visual
+number-sections: true
+author:
+  - name: Tiernan Martin
+    corresponding: true
+    email: tiernan@futurewise.org
+    roles:
+      - Investigation
+      - Software
+      - Visualization
+    affiliations:
+      - Futurewise
+keywords:
+  - Climate
+abstract: |
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer felis erat, mattis eget eros ac, consequat dictum ex. In condimentum, nibh a eleifend laoreet, magna.
+---
+
+```{r}
+#| label: setup
+#| echo: FALSE
+
+library(here)
+library(skimr)
+library(sf)
+library(performance)
+library(parameters)
+
+source(here("_targets.R"))
+
+tar_load(model_data)
+tar_load(model_lm)
+tar_load(model_spatial_lag)
+tar_load(model_spatial_weights)
+
+```
+
+## Introduction
+
+## Data & Methods
+
+### Data Sources
+
+-   Voting Precinct Shapefiles: https://www.sos.wa.gov/elections/data-research/election-data-and-maps/reports-data-and-statistics/precinct-shapefiles
+-   Election Results: https://www.sos.wa.gov/elections/data-research/election-data-and-maps/election-results-and-voters-pamphlets
+-   American Community Survey: https://www.census.gov/programs-surveys/acs/data.html
+-   2017 Local Area Transportation Characteristics for Households https://www.bts.gov/latch/latch-data
+
+### Data
+
+```{r}
+#| label: data-glimpse
+
+glimpse(model_data)
+
+```
+
+```{r}
+#| label: data-skim
+
+model_data_skim <- model_data |> 
+  drop_na() |> 
+  st_drop_geometry() 
+
+skim(model_data_skim)
+
+```
+
+```{r}
+#| label: fig-scatplots
+
+
+model_data |> 
+  drop_na() |> 
+  st_drop_geometry() |> 
+  pivot_longer(cols = c(hh_vmt, vote_rep_pct)) |> 
+  mutate(name = factor(name)) |> 
+  ggplot() +
+  aes(x = value, y = vote_i0732n_pct) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~name, nrow = 1, scales = "free_x")
+```
+
+```{r}
+#| label: fig-map-hh_vmt
+
+model_data |> 
+  drop_na() |> 
+  mapview(zcol = "hh_vmt", layer.name = "Avg. Daily VMT")
+```
+
+```{r}
+#| label: fig-map-vote_i0732n_pct
+
+model_data |> 
+  drop_na() |> 
+  mapview(zcol = "vote_i0732n_pct", layer.name = "% 'No' on I-732")
+```
+
+```{r}
+#| label: fig-map-vote_rep_pct
+
+model_data |> 
+  drop_na() |> 
+  mapview(zcol = "vote_rep_pct", layer.name = "% Rep. for President (2016)")
+```
+
+### Models
+
+#### Ordinary Least Squares (OLS)
+
+OLS linear regression model:
+
+```{r}
+#| label: model-lm-summary
+
+model_parameters(model_lm)
+
+```
+
+Linear model assumption checks:
+
+```{r}
+#| label: fig-model-lm-assumptions
+
+performance::check_model(model_lm)
+
+```
+
+Spatial Autocorrelation check (Moran I test):
+
+```{r}
+#| label: model-lm-moran-i
+moran.test(residuals(model_lm), model_spatial_weights)
+```
+
+#### Spatially Lagged Regression
+
+```{r}
+#| label: model-sp-summary
+
+summary(model_spatial_lag, Nagelkerke = TRUE)
+```
+
+Parameter comparison: OLS vs Spatial Lag
+
+```{r}
+#| label: model-parameter-comparison
+
+compare_parameters(model_lm,model_spatial_lag)
+
+
+```
+
+Comparison of Adjusted R^2^/Pseudo Adjusted R^2^: OLS vs Spatial Lag
+
+```{r}
+#| label: r2-comparison
+model_lm_r2_adj <- r2(model_lm) |> pluck("R2_adjusted")
+
+model_spatial_lag_r2_adj <- model_spatial_lag |> 
+  summary(Nagelkerke = TRUE) |> 
+  pluck("NK")
+
+tibble(
+  "lm" = model_lm_r2_adj,
+  "spatial_lag" = model_spatial_lag_r2_adj
+)
+
+```
+
+Spatially lagged regression model residuals:
+
+```{r}
+#| label: model-sp-residuals
+
+sp_lag_residuals <- model_data |> 
+  drop_na() |> 
+  mutate(sp_lag_residuals = abs(residuals(model_spatial_lag))) 
+
+mapview(sp_lag_residuals,
+        zcol = "sp_lag_residuals",
+        layer.name = "Residuals"
+          )
+  
+```
+
+### Methodology Notes
+
+-   Income should not be included in our regression because it is used in the model that estimates household VMT (see LATCH Methodology p. 10)
