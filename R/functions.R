@@ -1,13 +1,13 @@
 
 # TARGET FUNCTIONS --------------------------------------------------------
 
-make_model_spatial_lag <- function(model_data, model_lm_extended, model_spatial_weights){
+make_model_spatial_lag <- function(model_data, model_lm_multivariate, model_spatial_weights){
   
   model_data <- model_data |> 
     drop_na()
   
   model_spatial_lag <- lagsarlm(
-    formula = model_lm_extended, 
+    formula = model_lm_multivariate, 
     data = model_data, 
     listw = model_spatial_weights,
     zero.policy = TRUE
@@ -28,26 +28,26 @@ make_model_spatial_weights <- function(model_data){
   return(model_spatial_weights)
 }
 
-make_model_lm_extended <- function(model_data){
+make_model_lm_multivariate <- function(model_data){
   
   model_data <- model_data |> 
     drop_na()
   
-  model_lm_extended <- lm(vote_i0732n_pct ~ hh_vmt + vote_rep_pct, 
+  model_lm_multivariate <- lm(vote_i0732n_pct ~ hh_vmt + vote_rep_pct, 
                  data = model_data)
   
-  return(model_lm_extended)
+  return(model_lm_multivariate)
 }
 
-make_model_lm_simple <- function(model_data){
+make_model_lm_univariate <- function(model_data){
   
   model_data <- model_data |> 
     drop_na()
   
-  model_lm_simple <- lm(vote_i0732n_pct ~ hh_vmt, 
+  model_lm_univariate <- lm(vote_i0732n_pct ~ hh_vmt, 
                           data = model_data)
   
-  return(model_lm_simple)
+  return(model_lm_univariate)
 }
 
 make_model_data <- function(hh_vmt_2012_2016, tracts_vote_2016){
