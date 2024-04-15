@@ -1,5 +1,5 @@
 ---
-title: "Climate Voting in Washington State"
+title: "Voter Support for Climate Taxes: How Travel Behavior Influences Policy Preferences in Washington State"
 editor: visual
 number-sections: true
 author:
@@ -13,7 +13,7 @@ author:
     affiliations:
       - Futurewise
 keywords:
-  - Climate
+  - Carbon Tax, Travel Behavior, Vehicle Miles Traveled
 abstract: |
   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer felis erat, mattis eget eros ac, consequat dictum ex. In condimentum, nibh a eleifend laoreet, magna.
 ---
@@ -31,7 +31,8 @@ library(parameters)
 source(here("_targets.R"))
 
 tar_load(model_data)
-tar_load(model_lm)
+tar_load(model_lm_univariate)
+tar_load(model_lm_multivariate)
 tar_load(model_spatial_lag)
 tar_load(model_spatial_weights)
 
@@ -39,14 +40,67 @@ tar_load(model_spatial_weights)
 
 ## Introduction
 
-## Data & Methods
+This research explores the relationship between household travel behavior and voter preferences for climate-related taxes in Washington State. We examine how variations in travel patterns might influence public support for specific climate change change-related taxation policies. The analysis builds a harmonized, census tract-scale data set and uses several statistical models to explore the relationship between these variables.
 
-### Data Sources
+## Data and Methods
 
--   Voting Precinct Shapefiles: https://www.sos.wa.gov/elections/data-research/election-data-and-maps/reports-data-and-statistics/precinct-shapefiles
--   Election Results: https://www.sos.wa.gov/elections/data-research/election-data-and-maps/election-results-and-voters-pamphlets
--   American Community Survey: https://www.census.gov/programs-surveys/acs/data.html
--   2017 Local Area Transportation Characteristics for Households https://www.bts.gov/latch/latch-data
+### Data Opertionalization
+
+-   **Travel Behavior:** Represented by average daily vehicle miles travele (VMT) per household, sourced from the US Department of Transportation's Local Characteristics for Households [dataset](https://www.bts.gov/latch/latch-data). This metric reflects household mobility patterns.
+-   **Voter Preferences for Climate-Related Taxes:** Quantified through the results of the Initiative 732 vote in 2016, which proposed a carbon tax aims at reducing greenhouse gas emissions. This serves as a direct measure of voter support for climate-related taxation.
+-   **Political Partisanship:** Operationalized using the 2016 presidential election voting results, indicating the political values of voters, which may influence their support for environment- and/or taxation-related policy.
+
+### Model Descriptions
+
+#### Univariate Linear Model
+
+The univariate Ordinary Least Squares linear model examines the direct relationship between voter support for the climate-related tax and household travel behavior. This model is articulated through the following linear equation:
+
+$$
+y_i = \beta_0 + \beta_1x_{1i} + \epsilon_i
+$$
+
+In this equation:
+
+-   $y_i$ represents the response variable, specifically the share of 'No' votes on Initiative 732.
+-   $\beta_0$ is the y-axis intercept, indicating the baseline level of opposition to the initiative when average daily VMT per household is zero.
+-   $\beta_1x_{1i}$ is the coefficient for the explanatory variable, average daily VMT per household, which quantifies the change in the proportion of 'No' votes as VMT varies.
+-   $\epsilon_i$ denotes the random error term, accounting for the variation in 'No' votes not explained by travel behavior.
+
+Here, $y_i$ represents the response variable (share of 'No' votes on Initiative 732), $\beta_0$ is the model's y-axis intercept, $\beta_1x_{1i}$ is the coefficient of the explanatory variable (average daily VMT per household), and $\epsilon_i$ represents the random error term.
+
+This model establishes a baseline for identifying potential correlations between travel behavior and voter preferences regarding climate-related taxes, without considering any other confounding factors. It provides a straightforward way to assess the primary effect of travel on voting behavior before introducing more complexity into the analysis.
+
+#### Multivariate Linear Model
+
+Expanding upon the univariate linear model, the multivariate linear model incorporates an additional explanatory variable: political partisanship. This model is specified through the following equation:
+
+$$
+y_i = \beta_0 + \beta_1x_{1i} + \beta_2x_{2i} + \epsilon_i
+$$
+
+In this equation, $\beta_2x_{2i}$ is the coefficient of the additional explanatory variable (share of votes for the Republican presidential candidate).
+
+This model evaluates how both travel behavior and political orientation together affect support for climate-related taxes.
+
+#### Spatial Lag Model
+
+The Spatial Lag Model refines the multivariate Extended Linear Model by including a spatial lag variable that accounts for "spillover effect" (i.e., spatial autocorrelation of model residuals) of the multivariate linear model's dependent variable.
+
+$$
+y_i = \beta_0 + \beta_1x_{1i} + \beta_2x_{2i} + \rho w \cdot y_i + \epsilon_i
+$$
+
+In this equation:
+
+-   $\rho$ is the spatial-autoregressive coefficient
+-   $w$ is a spatial weights matrix
+
+Each model progressively incorporates more complexity to address different hypotheses about the influences on voter preferences regarding climate policy in Washington State. This approach allows for a nuanced analysis, distinguishing direct effects from those mediated by political identity or spatial proximity.
+
+
+
+## Results
 
 ### Data
 
@@ -110,34 +164,54 @@ model_data |>
 
 ### Models
 
-#### Ordinary Least Squares (OLS)
+#### Univariate OLS Linear Model
 
-OLS linear regression model:
-
+Univariate model paramaters:
 ```{r}
-#| label: model-lm-summary
+#| label: model-lm-univariate-summary
 
-model_parameters(model_lm)
+summary(model_lm_univariate)
 
 ```
 
-Linear model assumption checks:
+Univariate model assumption checks:
 
 ```{r}
-#| label: fig-model-lm-assumptions
+#| label: fig-model-lm-univariate-assumptions
 
-performance::check_model(model_lm)
+performance::check_model(model_lm_univariate)
+
+```
+
+#### Multivariate OLS Linear Model
+
+Multivariate model paramaters:
+```{r}
+#| label: model-lm-multivariate-summary
+
+summary(model_lm_multivariate)
+
+```
+
+Multivariate model assumption checks:
+
+```{r}
+#| label: fig-model-lm-multiivariate-assumptions
+
+performance::check_model(model_lm_multivariate)
 
 ```
 
 Spatial Autocorrelation check (Moran I test):
 
 ```{r}
-#| label: model-lm-moran-i
-moran.test(residuals(model_lm), model_spatial_weights)
+#| label: model-lm-model_lm_multivariate-moran-i
+moran.test(residuals(model_lm_multivariate), model_spatial_weights)
 ```
 
 #### Spatially Lagged Regression
+
+Spatial lag model parameters:
 
 ```{r}
 #| label: model-sp-summary
@@ -150,7 +224,7 @@ Parameter comparison: OLS vs Spatial Lag
 ```{r}
 #| label: model-parameter-comparison
 
-compare_parameters(model_lm,model_spatial_lag)
+compare_parameters(model_lm_univariate,model_lm_multivariate,model_spatial_lag)
 
 
 ```
@@ -159,14 +233,17 @@ Comparison of Adjusted R^2^/Pseudo Adjusted R^2^: OLS vs Spatial Lag
 
 ```{r}
 #| label: r2-comparison
-model_lm_r2_adj <- r2(model_lm) |> pluck("R2_adjusted")
+model_lm_univariate_r2_adj <- r2(model_lm_univariate) |> pluck("R2_adjusted")
+
+model_lm_multivariate_r2_adj <- r2(model_lm_multivariate) |> pluck("R2_adjusted")
 
 model_spatial_lag_r2_adj <- model_spatial_lag |> 
   summary(Nagelkerke = TRUE) |> 
   pluck("NK")
 
 tibble(
-  "lm" = model_lm_r2_adj,
+  "univariate" = model_lm_univariate_r2_adj,
+  "multivariate" = model_lm_multivariate_r2_adj,
   "spatial_lag" = model_spatial_lag_r2_adj
 )
 
@@ -188,6 +265,14 @@ mapview(sp_lag_residuals,
   
 ```
 
+
+## Appendix
+### Data Sources
+
+-   Voting Precinct Shapefiles: https://www.sos.wa.gov/elections/data-research/election-data-and-maps/reports-data-and-statistics/precinct-shapefiles
+-   Election Results: https://www.sos.wa.gov/elections/data-research/election-data-and-maps/election-results-and-voters-pamphlets
+-   American Community Survey: https://www.census.gov/programs-surveys/acs/data.html
+-   2017 Local Area Transportation Characteristics for Households https://www.bts.gov/latch/latch-data
 ### Methodology Notes
 
 -   Income should not be included in our regression because it is used in the model that estimates household VMT (see LATCH Methodology p. 10)
