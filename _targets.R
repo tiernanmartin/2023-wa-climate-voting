@@ -82,13 +82,13 @@ pipeline_data <- list(
 
 pipeline_models <- list(
   tar_target(model_spatial_lag,
-             make_model_spatial_lag(model_data, model_lm_extended, model_spatial_weights)),
+             make_model_spatial_lag(model_data, model_lm_multivariate, model_spatial_weights)),
   tar_target(model_spatial_weights,
              make_model_spatial_weights(model_data)),
-  tar_target(model_lm_extended,
-             make_model_lm_extended(model_data)),
-  tar_target(model_lm_simple,
-             make_model_lm_simple(model_data))
+  tar_target(model_lm_multivariate,
+             make_model_lm_multivariate(model_data)),
+  tar_target(model_lm_univariate,
+             make_model_lm_univariate(model_data))
 )
 
 # PROJECT PIPELINE --------------------------------------------------------
