@@ -1,5 +1,5 @@
 ---
-title: "Climate Voting in Washington State"
+title: "Voter Support for Climate Taxes: How Travel Behavior Influences Policy Preferences in Washington State"
 editor: visual
 number-sections: true
 author:
@@ -13,7 +13,7 @@ author:
     affiliations:
       - Futurewise
 keywords:
-  - Climate
+  - Carbon Tax, Travel Behavior, Vehicle Miles Traveled
 abstract: |
   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer felis erat, mattis eget eros ac, consequat dictum ex. In condimentum, nibh a eleifend laoreet, magna.
 ---
@@ -38,6 +38,14 @@ tar_load(model_spatial_weights)
 ```
 
 ## Introduction
+
+This research explores the relationship between household travel behavior and voter preferences for climate-related taxes in Washington State. We examine how variations in travel patterns might influence public support for specific climate change change-related taxation policies. The analysis builds a harmonized, census tract-scale data set and uses several statistical models to explore the relationship between these variables.
+
+### Data Opertionalization
+
+-   **Travel Behavior:** Represented by average daily vehicle miles travele (VMT) per household, sourced from the US Department of Transportation's Local Characteristics for Households [dataset](https://www.bts.gov/latch/latch-data). This metric reflects household mobility patterns. 
+-   **Voter Preferences for Climate-Related Taxes:** Quantified through the results of the Initiative 732 vote in 2016, which proposed a carbon tax aims at reducing greenhouse gas emissions. This serves as a direct measure of voter support for climate-related taxation.
+-   **Political Partisanship:** Operationalized using the 2016 presidential election voting results, indicating the political values of voters, which may influence their support for environment- and/or taxation-related policy.
 
 ## Data & Methods
 
