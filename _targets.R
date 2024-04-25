@@ -45,6 +45,9 @@ pipeline_files <- list(
              format = "file"),
   tar_target(file_latch_2016,
              here("data/Local_Area_Transportation_Characteristics_by_Household_20240326.csv"),
+             format = "file"),
+  tar_target(file_senate_dist_2016,
+             here("data/tl_2016_53_sldu.zip"),
              format = "file")
   
 )
@@ -74,7 +77,9 @@ pipeline_data <- list(
   tar_target(i732, 
              make_i732(file_precincts_2016, file_election_2016)),
   tar_target(vote_pres_2016, 
-             make_vote_pres_2016(file_precincts_2016, file_election_2016))
+             make_vote_pres_2016(file_precincts_2016, file_election_2016)),
+  tar_target(senate_dist_2016,
+             make_senate_dist_2016(file_senate_dist_2016))
 )
 
 

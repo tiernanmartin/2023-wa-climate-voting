@@ -1,5 +1,5 @@
 ---
-title: "Voter Support for Climate Taxes: How Travel Behavior Influences Policy Preferences in Washington State"
+title: "Going The Distance: How Travel Behavior Influences Climate-Related Policy Preferences in Washington State"
 editor: visual
 number-sections: true
 author:
@@ -15,7 +15,7 @@ author:
 keywords:
   - Carbon Tax, Travel Behavior, Vehicle Miles Traveled
 abstract: |
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer felis erat, mattis eget eros ac, consequat dictum ex. In condimentum, nibh a eleifend laoreet, magna.
+  This research investigates how household travel behavior in Washington State influences voter support for climate-related fiscal policies, such as carbon taxes and cap-and-trade systems, using a harmonized census tract-scale dataset and multiple statistical models.
 ---
 
 ```{r}
@@ -27,6 +27,7 @@ library(skimr)
 library(sf)
 library(performance)
 library(parameters)
+library(patchwork)
 
 source(here("_targets.R"))
 
@@ -40,13 +41,13 @@ tar_load(model_spatial_weights)
 
 ## Introduction
 
-This research explores the relationship between household travel behavior and voter preferences for climate-related taxes in Washington State. We examine how variations in travel patterns might influence public support for specific climate change change-related taxation policies. The analysis builds a harmonized, census tract-scale data set and uses several statistical models to explore the relationship between these variables.
+This research explores the relationship between household travel behavior and voter preferences for climate-related fiscal policy in Washington State. We examine how variations in travel patterns might influence public support for specific climate change change-related fiscal policies such as carbon taxes or "cap and trade" emission trading systems. The analysis builds a harmonized, census tract-scale data set and uses several statistical models to explore the relationship between these variables.
 
 ## Data and Methods
 
 ### Data Opertionalization
 
--   **Travel Behavior:** Represented by average daily vehicle miles travele (VMT) per household, sourced from the US Department of Transportation's Local Characteristics for Households [dataset](https://www.bts.gov/latch/latch-data). This metric reflects household mobility patterns.
+-   **Travel Behavior:** Represented by average daily vehicle miles traveled (VMT) per household, sourced from the US Department of Transportation's Local Characteristics for Households [dataset](https://www.bts.gov/latch/latch-data). This metric reflects household mobility patterns.
 -   **Voter Preferences for Climate-Related Taxes:** Quantified through the results of the Initiative 732 vote in 2016, which proposed a carbon tax aims at reducing greenhouse gas emissions. This serves as a direct measure of voter support for climate-related taxation.
 -   **Political Partisanship:** Operationalized using the 2016 presidential election voting results, indicating the political values of voters, which may influence their support for environment- and/or taxation-related policy.
 
@@ -98,8 +99,6 @@ In this equation:
 
 Each model progressively incorporates more complexity to address different hypotheses about the influences on voter preferences regarding climate policy in Washington State. This approach allows for a nuanced analysis, distinguishing direct effects from those mediated by political identity or spatial proximity.
 
-
-
 ## Results
 
 ### Data
@@ -125,17 +124,61 @@ skim(model_data_skim)
 ```{r}
 #| label: fig-scatplots
 
+p1 <- model_data |> 
+  drop_na() |> 
+  st_drop_geometry() |> 
+  mutate(vote_party = case_when(
+    vote_rep_pct <= 50 ~ "Democrat",
+    vote_rep_pct > 50 ~ "Republican",
+    TRUE ~ "Other"
+  )) |> 
+  mutate(vote_party = factor(vote_party,
+                             levels = c("Democrat",
+                                        "Republican",
+                                        "Other"))) |> 
+  ggplot() +
+  aes(y = vote_i0732n_pct/100, 
+      x = hh_vmt)+
+  geom_point(aes(fill = vote_party,
+                 color = vote_party),
+             alpha = 0.5) +
+  geom_smooth(method = "lm",
+              se = TRUE,
+              color = "black",
+              linetype = 1) +
+  scale_y_continuous(labels = scales::percent) +
+  scale_color_manual(values = c("cornflowerblue","tomato")) +
+  theme_minimal() +
+  guides(fill = FALSE) +
+  ylab("Share of 'No' Votes, I-732") +
+  xlab("Average Daily Vehicle Miles Traveled Per Household") +
+  labs(color = "2016\nPresidential\nElection\nWinner") +
+  theme(plot.caption = element_text(hjust = 0))
 
-model_data |> 
+custom_labels <- c("hh_vmt" = "'No' on I-732 ~ Avg. HH VMT", 
+                   "vote_rep_pct" = "'No' on I-732 ~ Pres. Vote Rep."
+                   )
+
+labeller_func <- as_labeller(custom_labels)
+
+p2 <- model_data |> 
   drop_na() |> 
   st_drop_geometry() |> 
   pivot_longer(cols = c(hh_vmt, vote_rep_pct)) |> 
   mutate(name = factor(name)) |> 
   ggplot() +
-  aes(x = value, y = vote_i0732n_pct) +
-  geom_point(alpha = 0.5) +
+  aes(x = value, y = vote_i0732n_pct/100) +
+  geom_point(alpha = 0.25) +
   geom_smooth(method = "lm") +
-  facet_wrap(~name, nrow = 1, scales = "free_x")
+  facet_wrap(~name, nrow = 1, scales = "free_x",labeller = labeller_func) + 
+  scale_y_continuous(labels = scales::percent) +
+  theme_minimal() + 
+  ylab("") +
+  xlab("")
+
+
+p1 + p2 + plot_layout(ncol = 1,
+                      heights = c(2,1))
 ```
 
 ```{r}
@@ -167,6 +210,7 @@ model_data |>
 #### Univariate OLS Linear Model
 
 Univariate model paramaters:
+
 ```{r}
 #| label: model-lm-univariate-summary
 
@@ -186,6 +230,7 @@ performance::check_model(model_lm_univariate)
 #### Multivariate OLS Linear Model
 
 Multivariate model paramaters:
+
 ```{r}
 #| label: model-lm-multivariate-summary
 
@@ -265,14 +310,16 @@ mapview(sp_lag_residuals,
   
 ```
 
-
 ## Appendix
+
 ### Data Sources
 
 -   Voting Precinct Shapefiles: https://www.sos.wa.gov/elections/data-research/election-data-and-maps/reports-data-and-statistics/precinct-shapefiles
+
 -   Election Results: https://www.sos.wa.gov/elections/data-research/election-data-and-maps/election-results-and-voters-pamphlets
+
 -   American Community Survey: https://www.census.gov/programs-surveys/acs/data.html
--   2017 Local Area Transportation Characteristics for Households https://www.bts.gov/latch/latch-data
-### Methodology Notes
+
+-   2017 Local Area Transportation Characteristics for Households https://www.bts.gov/latch/latch-data \### Methodology Notes
 
 -   Income should not be included in our regression because it is used in the model that estimates household VMT (see LATCH Methodology p. 10)

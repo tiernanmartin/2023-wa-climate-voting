@@ -149,6 +149,17 @@ make_tracts <- function(){
   return(tracts)
 }
 
+make_senate_dist_2016 <- function(file_senate_dist_2016){
+  # source: https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2016&layergroup=State+Legislative+Districts
+  
+  senate_dist_2016 <- st_read(sprintf("/vsizip/%s", file_senate_dist_2016)) |> 
+    to_proj_crs() |> 
+    clean_names() |> 
+    st_make_valid()
+    
+  return(senate_dist_2016)
+}
+
 make_hh_vmt_2012_2016 <- function(latch_fp){
   
   hh_vmt_2012_2016 <- read_csv(latch_fp) |> 
