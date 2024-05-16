@@ -320,6 +320,8 @@ mapview(sp_lag_residuals,
 
 -   American Community Survey: https://www.census.gov/programs-surveys/acs/data.html
 
--   2017 Local Area Transportation Characteristics for Households https://www.bts.gov/latch/latch-data \### Methodology Notes
+-   2017 Local Area Transportation Characteristics for Households https://www.bts.gov/latch/latch-data
+
+### Methodology Notes
 
 -   Income should not be included in our regression because it is used in the model that estimates household VMT (see LATCH Methodology p. 10)
