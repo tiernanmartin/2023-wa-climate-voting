@@ -225,6 +225,58 @@ make_i1631 <- function(elec_url,
   return(i1631)
 }
 
+make_vote_us_senator_2018 <- function(elec_url, prec_fp){
+  
+  # 2018 Election Results 
+  
+  elec_2018 <- read_csv(elec_url) |> 
+    clean_names() |> 
+    filter(str_detect(race, "U.S. Senator")) |> 
+    pivot_wider(names_from = "candidate",values_from = "votes",) |> 
+    clean_names() |> 
+    rename(vote_federal_2016_dem = maria_cantwell,
+           vote_federal_2016_rep = susan_hutchison) |> 
+    select(county_code,
+           precinct_code,
+           vote_federal_2016_dem,
+           vote_federal_2016_rep) |> 
+    filter(!precinct_code == -1) |>  # -1 is used for the county total
+    mutate(precinct_code = case_when(
+      # extract last three numbers from precinct code for the weird PI county
+      county_code %in% "PI" ~ str_extract(precinct_code,".{3}$"),
+      TRUE ~ as.character(precinct_code)
+    ))
+  
+  # 2018 Election Precincts  
+  
+  prec_2018 <- st_read(sprintf("/vsizip/%s", prec_fp),
+                       layer = "2018Precincts_VERIFIED") |> 
+    to_proj_crs() |> 
+    clean_names() |> 
+    st_make_valid()
+  
+  
+  # Join 
+  
+  vote_us_senator_2018 <- prec_2018 |>
+    rename(county_code = "county_cd",
+           precinct_code = "prc_code") |> 
+    mutate(precinct_code = case_when(
+      county_code %in% "PI" ~ str_extract(precinct_code,".{3}$"),
+      TRUE ~ as.character(precinct_code)
+    )) |> 
+    left_join(elec_2018, by = c("county_code","precinct_code"))
+  
+  # Note: 
+  # There are substantially more precincts (7,336)
+  # than there are precinct election results for I-1631 (4460)
+  
+  list(prec_2018, elec_2018) |> 
+    map(nrow)
+  
+  return(vote_us_senator_2018)
+}
+
 make_i732 <- function(prec_fp, elec_fp){
   
   # Precincts (2016) 
