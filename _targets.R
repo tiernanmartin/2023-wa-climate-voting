@@ -37,6 +37,10 @@ tar_source(files = here("R/functions.R"))
 # TARGET PIPELINE: FILES --------------------------------------------------
 
 pipeline_files <- list(
+  tar_target(url_election_2018,
+             "https://results.vote.wa.gov/results/20181106/export/20181106_allstateprecincts.csv"),
+  tar_target(file_precincts_2018,
+             here("data/2018-general-data/2018-general-data/2018Precincts_VERIFIED.zip")),
   tar_target(file_precincts_2016,
              here("data/Statewide_Prec_2016.zip"),
              format = "file"),
@@ -74,6 +78,9 @@ pipeline_data <- list(
              make_tracts()),
   tar_target(hh_vmt_2012_2016,
              make_hh_vmt_2012_2016(file_latch_2016)),
+  tar_target(i1631,
+             make_i1631(url_election_2018,
+                        file_precincts_2018)),
   tar_target(i732, 
              make_i732(file_precincts_2016, file_election_2016)),
   tar_target(vote_pres_2016, 
