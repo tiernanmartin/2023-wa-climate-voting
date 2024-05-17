@@ -60,8 +60,10 @@ pipeline_files <- list(
 # TARGET PIPELINE: DATA -------------------------------------------
 
 pipeline_data <- list(
-  tar_target(model_data,
-             make_model_data(hh_vmt_2012_2016, tracts_vote_2016)),
+  tar_target(model_data_i1631,
+             make_model_data_i1631(hh_vmt_2012_2016, tracts_vote_2018)),
+  tar_target(model_data_i732,
+             make_model_data_i732(hh_vmt_2012_2016, tracts_vote_2016)),
   tar_target(drove_alone_2012_2016,
              make_drove_alone_2012_2016()),
   tar_target(tracts_vote_2018,
@@ -98,14 +100,23 @@ pipeline_data <- list(
 # TARGET PIPELINE: MODELS -------------------------------------------------
 
 pipeline_models <- list(
-  tar_target(model_spatial_lag,
-             make_model_spatial_lag(model_data, model_lm_multivariate, model_spatial_weights)),
-  tar_target(model_spatial_weights,
-             make_model_spatial_weights(model_data)),
-  tar_target(model_lm_multivariate,
-             make_model_lm_multivariate(model_data)),
-  tar_target(model_lm_univariate,
-             make_model_lm_univariate(model_data))
+  tar_target(model_i732_spatial_lag,
+             make_model_spatial_lag(model_data_i732, model_i732_lm_multivariate, model_i732_spatial_weights)),
+  tar_target(model_i732_spatial_weights,
+             make_model_spatial_weights(model_data_i732)),
+  tar_target(model_i732_lm_multivariate,
+             make_model_lm_multivariate(model_data_i732)),
+  tar_target(model_i732_lm_univariate,
+             make_model_lm_univariate(model_data_i732)),
+  tar_target(model_i1631_spatial_lag,
+             make_model_spatial_lag(model_data_i1631, model_i1631_lm_multivariate, model_i1631_spatial_weights)),
+  tar_target(model_i1631_spatial_weights,
+             make_model_spatial_weights(model_data_i1631)),
+  tar_target(model_i1631_lm_multivariate,
+             make_model_lm_multivariate(model_data_i1631)),
+  tar_target(model_i1631_lm_univariate,
+             make_model_lm_univariate(model_data_i1631))
+  
 )
 
 # PROJECT PIPELINE --------------------------------------------------------

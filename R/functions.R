@@ -33,7 +33,7 @@ make_model_lm_multivariate <- function(model_data){
   model_data <- model_data |> 
     drop_na()
   
-  model_lm_multivariate <- lm(vote_i0732n_pct ~ hh_vmt + vote_rep_pct, 
+  model_lm_multivariate <- lm(vote_no_pct ~ hh_vmt + vote_rep_pct, 
                  data = model_data)
   
   return(model_lm_multivariate)
@@ -44,25 +44,42 @@ make_model_lm_univariate <- function(model_data){
   model_data <- model_data |> 
     drop_na()
   
-  model_lm_univariate <- lm(vote_i0732n_pct ~ hh_vmt, 
+  model_lm_univariate <- lm(vote_no_pct ~ hh_vmt, 
                           data = model_data)
   
   return(model_lm_univariate)
 }
 
-make_model_data <- function(hh_vmt_2012_2016, tracts_vote_2016){
+make_model_data_i1631 <- function(hh_vmt_2012_2018, tracts_vote_2018){
   
-  model_data <- left_join(tracts_vote_2016, 
+  model_data_i1631 <- left_join(tracts_vote_2018, 
+                          hh_vmt_2012_2018,
+                          by = join_by(geoid)) |> 
+    transmute(
+      geoid,
+      hh_vmt,
+      vote_rep_pct = vote_rep_pct * 100,
+      vote_i1631n_pct = vote_i1631n_pct * 100,
+      vote_no_pct = vote_i1631n_pct) |> 
+    st_sf()
+  
+  return(model_data_i1631)
+}
+
+make_model_data_i732 <- function(hh_vmt_2012_2016, tracts_vote_2016){
+  
+  model_data_i732 <- left_join(tracts_vote_2016, 
                           hh_vmt_2012_2016,
                           by = join_by(geoid)) |> 
     transmute(
       geoid,
       hh_vmt,
       vote_rep_pct = vote_rep_pct * 100,
-      vote_i0732n_pct = vote_i0732n_pct * 100) |> 
+      vote_i0732n_pct = vote_i0732n_pct * 100,
+      vote_no_pct = vote_i0732n_pct) |> 
     st_sf()
   
-  return(model_data)
+  return(model_data_i732)
 }
 
 make_tracts_vote_2018 <- function(wa_pop_2020,
