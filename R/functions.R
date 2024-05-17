@@ -65,18 +65,39 @@ make_model_data <- function(hh_vmt_2012_2016, tracts_vote_2016){
   return(model_data)
 }
 
-make_tracts_vote_2016 <- function(wa_blocks,
-                                  wa_pop_2010,
+make_tracts_vote_2018 <- function(wa_pop_2020,
+                                  vote_us_senator_2018, 
+                                  i1631,
+                                  tracts
+){
+  
+  
+  vote_2018 <- inner_join(vote_us_senator_2018,
+                         st_drop_geometry(i1631))
+  
+  tracts_vote_2018 <- interpolate_pw(
+    from = vote_2018,
+    to = tracts,
+    to_id = "geoid",
+    extensive = TRUE,
+    weights = wa_pop_2020,
+    weight_column = "pop_2020",
+    crs = 6152) |> 
+    rowwise() |> 
+    mutate(
+      vote_rep_pct = vote_us_senator_2018_rep / sum(c_across(starts_with("vote_us_senator")), na.rm = TRUE),
+      vote_i1631n_pct = i1631_no / sum(i1631_no, i1631_yes, na.rm = TRUE)
+    )
+  
+  
+  return(tracts_vote_2018)
+}
+
+make_tracts_vote_2016 <- function(wa_pop_2020,
                                   vote_pres_2016, 
                                   i732,
                                   tracts
 ){
-  
-  wa_blocks_pop_2010 <- wa_blocks |> 
-    inner_join(wa_pop_2010,by = join_by(geoid10 == geoid)) |> 
-    select(
-      geoid = geoid10,
-      pop_2010)
   
   vote_2016 <- full_join(vote_pres_2016,
                          st_drop_geometry(i732))
@@ -86,8 +107,8 @@ make_tracts_vote_2016 <- function(wa_blocks,
     to = tracts,
     to_id = "geoid",
     extensive = TRUE,
-    weights = wa_blocks_pop_2010,
-    weight_column = "pop_2010",
+    weights = wa_pop_2020,
+    weight_column = "pop_2020",
     crs = 6152) |> 
     rowwise() |> 
     mutate(
@@ -99,6 +120,28 @@ make_tracts_vote_2016 <- function(wa_blocks,
   return(tracts_vote_2016)
 }
 
+make_wa_pop_2020 <- function(){
+  
+  wa_county_geoids <- tidycensus::county_laea$GEOID |> 
+    keep(~ str_detect(.x,"^53")) |> 
+    map_chr(~str_remove(.x,"^53"))
+  
+  wa_pop_2020 <- get_decennial(geography = "block",
+                               output = "wide",
+                               variables = "P1_001N",
+                               year = 2020,
+                               state = "WA",
+                               county = wa_county_geoids, 
+                               geometry = TRUE) |> 
+    clean_names() |>  
+    to_proj_crs() |> 
+    st_make_valid() |> 
+    transmute(geoid,
+              pop_2020 = as.integer(p1_001n)) 
+  
+  return(wa_pop_2020)
+}
+
 
 
 make_wa_pop_2010 <- function(){
@@ -108,16 +151,21 @@ make_wa_pop_2010 <- function(){
     map_chr(~str_remove(.x,"^53"))
   
   wa_pop_2010 <- get_decennial(geography = "block",
+                               output = "wide",
                                variables = "P001001",
                                year = 2010,
                                state = "WA",
-                               county = wa_county_geoids) |> 
-    clean_names() |> 
+                               county = wa_county_geoids, 
+                               geometry = TRUE) |> 
+    clean_names() |>  
+    to_proj_crs() |> 
+    st_make_valid() |>
     transmute(geoid,
-              pop_2010 = as.integer(value)) 
+              pop_2010 = as.integer(p001001)) 
   
   return(wa_pop_2010)
 }
+
 
 make_wa_blocks <- function(){
   
@@ -127,7 +175,7 @@ make_wa_blocks <- function(){
   
   
   wa_blocks <- tigris::blocks(state = "wa",
-                              year = 2016,
+                              year = 2020,
                               county = wa_county_geoids) |> 
     clean_names() |> 
     to_proj_crs() |> 
@@ -234,12 +282,12 @@ make_vote_us_senator_2018 <- function(elec_url, prec_fp){
     filter(str_detect(race, "U.S. Senator")) |> 
     pivot_wider(names_from = "candidate",values_from = "votes",) |> 
     clean_names() |> 
-    rename(vote_federal_2016_dem = maria_cantwell,
-           vote_federal_2016_rep = susan_hutchison) |> 
+    rename(vote_us_senator_2018_dem = maria_cantwell,
+           vote_us_senator_2018_rep = susan_hutchison) |> 
     select(county_code,
            precinct_code,
-           vote_federal_2016_dem,
-           vote_federal_2016_rep) |> 
+           vote_us_senator_2018_dem,
+           vote_us_senator_2018_rep) |> 
     filter(!precinct_code == -1) |>  # -1 is used for the county total
     mutate(precinct_code = case_when(
       # extract last three numbers from precinct code for the weird PI county
