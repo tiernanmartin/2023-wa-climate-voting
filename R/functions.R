@@ -50,10 +50,10 @@ make_model_lm_univariate <- function(model_data){
   return(model_lm_univariate)
 }
 
-make_model_data_i1631 <- function(hh_vmt_2012_2018, tracts_vote_2018){
+make_model_data_i1631 <- function(hh_vmt_2012_2016, tracts_vote_2018){
   
   model_data_i1631 <- left_join(tracts_vote_2018, 
-                          hh_vmt_2012_2018,
+                          hh_vmt_2012_2016,
                           by = join_by(geoid)) |> 
     transmute(
       geoid,
@@ -239,7 +239,8 @@ make_hh_vmt_2012_2016 <- function(latch_fp){
 }
 
 make_i1631 <- function(elec_url,
-                       prec_fp){
+                       prec_fp,
+                       kc_prec_fp){
   
   # 2018 Election Results 
   
@@ -254,11 +255,33 @@ make_i1631 <- function(elec_url,
            i1631_yes,
            i1631_no) |> 
     filter(!precinct_code == -1) |>  # -1 is used for the county total
-    mutate(precinct_code = case_when(
-      # extract last three numbers from precinct code for the weird PI county
-      county_code %in% "PI" ~ str_extract(precinct_code,".{3}$"),
-      TRUE ~ as.character(precinct_code)
-    ))
+    mutate(precinct_code = case_when(  # fix Kitsap's precinct codes
+      county_code %in% "KP" ~ precinct_code-100000,
+      TRUE ~ precinct_code
+    )) |> 
+    mutate(precinct_code = as.character(precinct_code)) |> 
+    mutate(full_prc = str_c(county_code,
+                            str_pad(precinct_code,
+                                    width = 8,
+                                    side = "left",
+                                    pad = "0"))) |> 
+    select(-precinct_code,-county_code)
+  
+  elec_king_county_2018 <- read_csv(kc_prec_fp) |> 
+    clean_names() |> 
+    filter(str_detect(race, "1631")) |> 
+    filter(counter_type %in% c("Yes","No")) |> 
+    pivot_wider(names_from = "counter_type",values_from = "sum_of_count") |> 
+    transmute(full_prc = str_c("KI", 
+                               str_pad(str_extract(precinct,".{4}$"),
+                                       width = 8,
+                                       side = "left",
+                                       pad = "0")),
+              i1631_yes = Yes,
+              i1631_no = No
+    )
+  
+  elec_2018 <- bind_rows(elec_2018,elec_king_county_2018)
   
   # 2018 Election Precincts  
   
@@ -272,17 +295,11 @@ make_i1631 <- function(elec_url,
   # Join 
   
   i1631 <- prec_2018 |>
-    rename(county_code = "county_cd",
-           precinct_code = "prc_code") |> 
-    mutate(precinct_code = case_when(
-      county_code %in% "PI" ~ str_extract(precinct_code,".{3}$"),
-      TRUE ~ as.character(precinct_code)
-    )) |> 
-    left_join(elec_2018, by = c("county_code","precinct_code"))
+    left_join(elec_2018)
   
   # Note: 
-  # There are substantially more precincts (7,336)
-  # than there are precinct election results for I-1631 (4460)
+  # There are more precincts (7,336)
+  # than there are precinct election results for I-1631 (7264)
   
   list(prec_2018, elec_2018) |> 
     map(nrow)
@@ -290,14 +307,16 @@ make_i1631 <- function(elec_url,
   return(i1631)
 }
 
-make_vote_us_senator_2018 <- function(elec_url, prec_fp){
+make_vote_us_senator_2018 <- function(elec_url, 
+                                      prec_fp,
+                                      kc_prec_fp){
   
   # 2018 Election Results 
   
   elec_2018 <- read_csv(elec_url) |> 
     clean_names() |> 
     filter(str_detect(race, "U.S. Senator")) |> 
-    pivot_wider(names_from = "candidate",values_from = "votes",) |> 
+    pivot_wider(names_from = "candidate",values_from = "votes") |> 
     clean_names() |> 
     rename(vote_us_senator_2018_dem = maria_cantwell,
            vote_us_senator_2018_rep = susan_hutchison) |> 
@@ -306,11 +325,34 @@ make_vote_us_senator_2018 <- function(elec_url, prec_fp){
            vote_us_senator_2018_dem,
            vote_us_senator_2018_rep) |> 
     filter(!precinct_code == -1) |>  # -1 is used for the county total
-    mutate(precinct_code = case_when(
-      # extract last three numbers from precinct code for the weird PI county
-      county_code %in% "PI" ~ str_extract(precinct_code,".{3}$"),
-      TRUE ~ as.character(precinct_code)
-    ))
+    mutate(precinct_code = case_when(  # fix Kitsap's precinct codes
+      county_code %in% "KP" ~ precinct_code-100000,
+      TRUE ~ precinct_code
+    )) |> 
+    mutate(precinct_code = as.character(precinct_code)) |> 
+    mutate(full_prc = str_c(county_code,
+                            str_pad(precinct_code,
+                                    width = 8,
+                                    side = "left",
+                                    pad = "0"))) |> 
+    select(-precinct_code,-county_code)
+  
+  elec_king_county_2018 <- read_csv(kc_prec_fp) |> 
+    clean_names() |> 
+    filter(str_detect(race, "US Senator")) |> 
+    filter(party %in% c("Dem","Rep")) |> 
+    select(precinct, party, sum_of_count) |> 
+    pivot_wider(names_from = "party",values_from = "sum_of_count") |> 
+    transmute(full_prc = str_c("KI", 
+                               str_pad(str_extract(precinct,".{4}$"),
+                                       width = 8,
+                                       side = "left",
+                                       pad = "0")),
+              vote_us_senator_2018_dem = Dem,
+              vote_us_senator_2018_rep = Rep
+    )
+  
+  elec_2018 <- bind_rows(elec_2018, elec_king_county_2018)
   
   # 2018 Election Precincts  
   
@@ -324,13 +366,7 @@ make_vote_us_senator_2018 <- function(elec_url, prec_fp){
   # Join 
   
   vote_us_senator_2018 <- prec_2018 |>
-    rename(county_code = "county_cd",
-           precinct_code = "prc_code") |> 
-    mutate(precinct_code = case_when(
-      county_code %in% "PI" ~ str_extract(precinct_code,".{3}$"),
-      TRUE ~ as.character(precinct_code)
-    )) |> 
-    left_join(elec_2018, by = c("county_code","precinct_code"))
+    left_join(elec_2018)
   
   # Note: 
   # There are substantially more precincts (7,336)
