@@ -56,12 +56,12 @@ combined_models |>
   ylab("Share of 'No' Votes") +
   xlab("Average Daily Vehicle Miles Traveled Per Household") +
   labs(color = "Partisanship",
-       caption = "Sources: Local Area Transportation Characteristics for Households, 2017;\nWashington Secretary of State: Election Division, 2016 and 2018;\nFuturewise, 2024") +
+       caption = "Notes: Data points are census tracts in Washington State\nSources: Local Area Transportation Characteristics for Households, 2017;\nWashington Secretary of State: Election Division, 2016 and 2018;\nFuturewise, 2024") +
   theme(plot.background = element_rect(fill = "white",color = "white"),
         plot.caption = element_text(hjust = 0))
   
 ggsave("plots/2024-05-17_scatterplots-both-intiatives.png",scale = 2,
-       width = 4.5, units = "in")
+       width = 5, height = 2.5, units = "in")
 
 
 
