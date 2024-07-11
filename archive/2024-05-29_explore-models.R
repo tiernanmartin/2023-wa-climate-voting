@@ -30,11 +30,17 @@ map(model_list, summary, Nagelkerke = TRUE)
 
 # MODEL COEFFICIENTS ------------------------------------------------------
 
+compare_parameters(model_list, 
+                   pretty_names = "labels",
+                   select = "se_p")
 
 compare_parameters(model_list, 
                    pretty_names = "labels",
-                   select = "{estimate}{stars}") 
-
+                   select = "se_p") |> 
+  tibble() |> 
+  clean_names() |> 
+  select(-component,-effects) |> 
+  write_excel_csv(here::here("outputs/model-summary-table.csv"))
 
 # MODEL R2 ----------------------------------------------------------------
 
